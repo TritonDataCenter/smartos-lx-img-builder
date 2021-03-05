@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+#
+# Copyright (c) 2015, Joyent, Inc. All rights reserved.
+#
+# Execute metadata scripts operator-script and user-script
+
+# load common functions and vars
+. /lib/smartdc/common.lib
+
+if [[ -x /var/svc/mdata-operator-script ]]; then
+  smartdc_info "Executing metadata operator-script"
+  /var/svc/mdata-operator-script
+  operator_script_exit=$?
+  if [[ ${operator_script_exit} -gt 0 ]]; then
+    smartdc_info "WARNING: operator-script failed: exited \
+      ${operator_script_exit}" >&2
+  fi
+fi
+
+user_script_exit=0
+if [[ -x /var/svc/mdata-user-script ]]; then
+  smartdc_info "Executing metadata user-script"
+  USER_SCRIPT_LOG=/var/log/mdata-user-script.log
+  if [[ ! -e $USER_SCRIPT_LOG ]]; then
+    touch $USER_SCRIPT_LOG
+  fi
+  /var/svc/mdata-user-script >> $USER_SCRIPT_LOG 2>&1
+  [[ $? -gt 0 ]] && user_script_exit=95
+fi
+
+exit ${user_script_exit}

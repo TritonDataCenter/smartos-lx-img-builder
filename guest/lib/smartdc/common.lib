@@ -1,0 +1,23 @@
+#
+# Copyright (c) 2016, Joyent, Inc. All rights reserved.
+#
+# Common variables used by scripts in /lib/smartdc
+
+set -o xtrace
+
+LOGGER=$(which logger 2> /dev/null)
+MDATA_GET='/native/usr/sbin/mdata-get'
+
+smartdc_fatal() {
+  echo "(fatal) - $0 - $@"
+  $LOGGER "(fatal) - $0 - $@"
+  exit 1
+}
+
+smartdc_info() {
+  echo "(info) - $0 - $@"
+  $LOGGER "(info) - $0 - $@"
+}
+
+export -f smartdc_fatal
+export -f smartdc_info

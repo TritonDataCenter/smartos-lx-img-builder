@@ -1,0 +1,18 @@
+[package]
+name = "smartos-lx-img-builder"
+version = "0.1.0"
+authors = ["Mike Zeller <mike@mikezeller.net>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+anyhow = "1.0.38"
+chrono = "0.4.19"
+libc = "0.2.87"
+serde_json = "1.0.64"
+sha1 = "0.6.0"
+structopt = "0.3.21"
+url = "2.2.1"
+uuid = { version = "0.8.2", features = [ "serde", "v4" ] }
+walkdir = "2.3.1"
