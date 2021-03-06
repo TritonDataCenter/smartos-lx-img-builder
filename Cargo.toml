@@ -15,4 +15,3 @@ sha1 = "0.6.0"
 structopt = "0.3.21"
 url = "2.2.1"
 uuid = { version = "0.8.2", features = [ "serde", "v4" ] }
-walkdir = "2.3.1"

@@ -42,30 +42,65 @@ impl Distro {
                 let rclocal = zroot.join("etc/rc.local");
                 copy_file("guest/lib/smartdc/joyent_rc.local", &rclocal, 0, 0, 0o755)?;
                 let shutdown = zroot.join("sbin/shutdown");
-                copy_file("guest/sbin/shutdown", &shutdown, 0, 0, 0o744)?;
+                copy_file("guest/sbin/shutdown", &shutdown, 0, 0, 0o755)?;
+                copy_file(
+                    "guest/lib/smartdc/alpine",
+                    zroot.join("lib/smartdc/alpine"),
+                    0,
+                    0,
+                    0o755,
+                )?;
             }
             Self::Arch => {
                 let system = zroot.join("etc/systemd/system");
                 mkdirp(&system, 0, 0, 0o755)?;
                 let service = &system.join("joyent.service");
-                copy_file("etc/systemd/system/joyent.service", &service, 0, 0, 0o755)?;
+                copy_file("etc/systemd/system/joyent.service", &service, 0, 0, 0o644)?;
                 let enable =
                     zroot.join("etc/systemd/system/multi-user.target.wants/joyent.service");
                 create_symlink(&service, &enable, 0, 0)?;
+                copy_file(
+                    "guest/lib/smartdc/arch",
+                    zroot.join("lib/smartdc/arch"),
+                    0,
+                    0,
+                    0o755,
+                )?;
             }
             Self::Debian => {
                 let rclocal = zroot.join("etc/rc.local");
                 copy_file("guest/lib/smartdc/joyent_rc.local", &rclocal, 0, 0, 0o755)?;
+                copy_file(
+                    "guest/lib/smartdc/debian",
+                    zroot.join("lib/smartdc/debian"),
+                    0,
+                    0,
+                    0o755,
+                )?;
             }
             Self::Redhat => {
                 let dst = zroot.join("etc/rc.local");
                 copy_file("guest/lib/smartdc/joyent_rc.local", &dst, 0, 0, 0o755)?;
+                copy_file(
+                    "guest/lib/smartdc/redhat",
+                    zroot.join("lib/smartdc/redhat"),
+                    0,
+                    0,
+                    0o755,
+                )?;
             }
             Self::Void => {
                 let rclocal = zroot.join("etc/rc.local");
                 copy_file("guest/lib/smartdc/joyent_rc.local", &rclocal, 0, 0, 0o755)?;
                 let shutdown = zroot.join("sbin/shutdown");
-                copy_file("guest/sbin/shutdown", &shutdown, 0, 0, 0o744)?;
+                copy_file("guest/sbin/shutdown", &shutdown, 0, 0, 0o755)?;
+                copy_file(
+                    "guest/lib/smartdc/void",
+                    zroot.join("lib/smartdc/void"),
+                    0,
+                    0,
+                    0o755,
+                )?;
             }
             Self::Unknown => {
                 bail!("failed to detect supported Linux Distribution");
@@ -91,7 +126,22 @@ fn install_native_manpath<P: AsRef<Path>>(zroot: P) -> Result<()> {
 
 fn install_smartdc<P: AsRef<Path>>(zroot: P) -> Result<()> {
     let zroot = zroot.as_ref();
-    copy_dir("guest/lib/smartdc", zroot.join("lib"), 0, 0, 0o755)?;
+
+    let paths = [
+        "lib/smartdc/common.lib",
+        "lib/smartdc/mdata-execute",
+        "lib/smartdc/mdata-fetch",
+        "lib/smartdc/mdata-image",
+        "lib/smartdc/mount-zfs",
+        "lib/smartdc/set-provision-state",
+    ];
+
+    let guest = Path::new("guest");
+    for p in &paths {
+        let src = guest.join(p);
+        let dst = zroot.join(p);
+        copy_file(&src, &dst, 0, 0, 0o755)?;
+    }
 
     Ok(())
 }
