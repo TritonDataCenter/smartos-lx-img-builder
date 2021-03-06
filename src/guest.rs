@@ -127,6 +127,7 @@ fn install_native_manpath<P: AsRef<Path>>(zroot: P) -> Result<()> {
 fn install_smartdc<P: AsRef<Path>>(zroot: P) -> Result<()> {
     let zroot = zroot.as_ref();
 
+    mkdirp(zroot.join("lib/smartdc"), 0, 0, 0o755)?;
     let paths = [
         "lib/smartdc/common.lib",
         "lib/smartdc/mdata-execute",
