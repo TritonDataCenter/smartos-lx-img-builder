@@ -82,6 +82,7 @@ pub fn install_tar<P: AsRef<Path>, T: AsRef<Path>>(zroot: P, file: T) -> Result<
         "compressed" => gtaropts.push_str("xz"),
         "ustar" => gtaropts.push('x'),
         "xz" => gtaropts.push_str("xJ"),
+        "tar" => gtaropts.push_str("x"),
         _ => bail!("unknown tar extension \"{}\"", file_ext),
     };
     gtaropts.push('f');
