@@ -51,13 +51,13 @@ pub struct Opts {
     )]
     pub url: String,
     #[structopt(
-        name = "zpool",
-        long = "zpool",
+        name = "zfs_parent",
+        long = "zfs-parent",
         short = "z",
-        help = "the zpool to use when creating our temporary image",
+        help = "the parent zfs dataset to use when creating our temporary image",
         required = true
     )]
-    pub zpool: String,
+    pub zfs_parent: String,
 }
 
 pub fn get_opts() -> Opts {

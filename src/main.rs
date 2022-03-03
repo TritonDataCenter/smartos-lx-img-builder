@@ -29,7 +29,7 @@ fn main() -> Result<()> {
     let utc: DateTime<Utc> = Utc::now();
     let build_date = utc.format("%Y%m%d").to_string();
     let iuuid = format!("{}-{}", &opts.name, &build_date);
-    let dataset = format!("{}/{}", &opts.zpool, &iuuid);
+    let dataset = format!("{}/{}", &opts.zfs_parent, &iuuid);
     let zfs_tar = format!("{}.zfs.gz", &iuuid);
     let image_manifest = &format!("{}.json", &iuuid);
     let manifest = Manifest {

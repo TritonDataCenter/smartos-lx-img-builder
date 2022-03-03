@@ -56,7 +56,22 @@ pub fn create_dataset<T: AsRef<str>>(dataset: T) -> Result<PathBuf> {
 
     println!("created dataset {}", &dataset);
 
-    let zroot: PathBuf = ["/", &dataset, "root"].iter().collect();
+    let mut mp_cmd = Command::new("/sbin/zfs");
+    mp_cmd.env_clear();
+    mp_cmd.args(&["get", "-Ho", "value", "mountpoint", dataset]);
+    let mp = mp_cmd.output()?;
+    if !mp.status.success() {
+        let err = String::from_utf8_lossy(&mp.stderr);
+        bail!(
+            "Unable to determine dataset {} mountpoint: {}",
+            &dataset,
+            err
+        );
+    }
+    let mountpoint =
+        String::from_utf8(mp.stdout).context("invalid utf8 found in dataset mountpoint")?;
+
+    let zroot: PathBuf = [mountpoint.trim(), "root"].iter().collect();
     mkdirp(&zroot, 0, 0, 0o755).context("failed to create zroot")?;
 
     println!("created zroot {}", &zroot.display());
