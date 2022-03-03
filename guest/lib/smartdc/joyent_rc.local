@@ -39,6 +39,17 @@ case $(uname -s | tr '[:upper:]' '[:lower:]') in
     ;;
 esac
 
+# Set hostname, if one is available.
+tmp_hname=$(mktemp /tmp/hostname.XXXXXX)
+if /native/usr/bin/zonename | grep -q $HOSTNAME; then
+  if mdata-get sdc:hostname > "$tmp_hname" 2>/dev/null; then
+    mv "$tmp_hname" /etc/hostname
+    hostname -F /etc/hostname
+  else
+    rm "$tmp_hname)"
+  fi
+fi
+
 [[ -e "/var/log/.mdata-image.run" ]] || \
 [[ -e "/tmp/.mdata-image.run" ]] || \
  (/lib/smartdc/mdata-image)
