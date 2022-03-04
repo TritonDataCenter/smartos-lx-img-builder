@@ -15,7 +15,7 @@ pub struct Opts {
         long = "kernel",
         short = "k",
         help = "the kernel version",
-        required = true
+        default_value = "5.10.0"
     )]
     pub kernel: String,
     #[structopt(
@@ -23,23 +23,15 @@ pub struct Opts {
         long = "min",
         short = "m",
         help = "the minimum platform required for the image",
-        required = true
+        default_value = "20210826T002459Z"
     )]
     pub min_platform: String,
-    #[structopt(
-        name = "name",
-        long = "name",
-        short = "n",
-        help = "the name of the image as it would appear in the manifest",
-        required = true
-    )]
-    pub name: String,
     #[structopt(
         name = "description",
         long = "description",
         short = "d",
-        help = "the description of the image as it would appear in the manifest",
-        required = true
+        help = "text to append to the description of the image as it would appear in the manifest",
+        default_value = ""
     )]
     pub description: String,
     #[structopt(
@@ -47,7 +39,7 @@ pub struct Opts {
         long = "url",
         short = "u",
         help = "the url to information about the image as it would appear in the manifest",
-        required = true
+        default_value = "https://docs.joyent.com/public-cloud/instances/infrastructure/images"
     )]
     pub url: String,
     #[structopt(
@@ -55,7 +47,7 @@ pub struct Opts {
         long = "zfs-parent",
         short = "z",
         help = "the parent zfs dataset to use when creating our temporary image",
-        required = true
+        default_value = ""
     )]
     pub zfs_parent: String,
 }
