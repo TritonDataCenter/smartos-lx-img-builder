@@ -1,9 +1,8 @@
 extern crate os_release;
 
-use anyhow::Result;
+use anyhow::{Context, Result};
 use chrono::prelude::*;
 use os_release::OsRelease;
-use std::io;
 use std::path::Path;
 use uuid::Uuid;
 
@@ -28,7 +27,7 @@ macro_rules! run_action {
     }};
 }
 
-fn read_os_release<P: AsRef<Path>>(zroot: P) -> io::Result<OsRelease> {
+fn read_os_release<P: AsRef<Path>>(zroot: P) -> Result<OsRelease> {
     let zroot = zroot.as_ref();
     let path = &zroot.join("etc/os-release");
     let release = OsRelease::new_from(path)?;
@@ -37,8 +36,12 @@ fn read_os_release<P: AsRef<Path>>(zroot: P) -> io::Result<OsRelease> {
 
 fn get_zfs_parent(s: &str) -> String {
     let zonename = zonename::getzonename().expect("failed to get zonename");
-    if s == "" {
+    if s.is_empty() {
         if zonename == "global" {
+            // This bakes in a smartos-ism, and poorly. It would be better to
+            // query SMF for the blessed system_pool like we're supposed to.
+            // It may also be a good idea to search for alternate pools
+            // (e.g., rpool). For now at least, they can' use -z to specify.
             return "zones".to_string();
         } else {
             return format!("zones/{}/data", &zonename);
@@ -60,7 +63,7 @@ fn main() -> Result<()> {
     let zroot = create_dataset(&dataset)?;
     run_action!(install_tar(&zroot, &opts.tar), &dataset);
 
-    let os_release = read_os_release(&zroot).unwrap();
+    let os_release = read_os_release(&zroot).context("failed to read os-release")?;
     let name = format!("{}-{}", os_release.id, os_release.version_id)
         .trim_end_matches("-")
         .to_string();
@@ -82,28 +85,25 @@ fn main() -> Result<()> {
         kernel: &opts.kernel,
         tar_file: &zfs_tar,
     };
-    let product = [
-        "Name: Joyent Instance".to_string(),
-        format!("Image: {} {}", &os_release.pretty_name, &build_date).to_string(),
-        format!("Documentation: {}", &opts.url).to_string(),
-        format!("Description: {}\n", &desc).to_string(),
-    ]
-    .join("\n");
+    let product = format!(
+        r#"Name: Joyent Instance
+Image: {} {}
+Documentation: {}
+Description: {}
 
-    let motd = [
-        "   __        .                   .".to_string(),
-        " _|  |_      | .-. .  . .-. :--. |-".to_string(),
-        "|_    _|     ;|   ||  |(.-' |  | |".to_string(),
-        "  |__|   `--'  `-' `;-| `-' '  ' `-'".to_string(),
-        format!(
-            "                   /  ;  Instance ({} {})",
-            &os_release.pretty_name, &build_date
-        )
-        .to_string(),
-        format!("                   `-'   {}", &opts.url).to_string(),
-        "\n".to_string(),
-    ]
-    .join("\n");
+"#,
+        &os_release.pretty_name, &build_date, &opts.url, &desc
+    );
+
+    let motd = format!(
+        r#"   __        .                   .
+ _|  |_      | .-. .  . .-. :--. |-
+|_    _|     ;|   ||  |(.-' |  | |
+  |__|   `--'  `-' `;-| `-' '  ' `-'
+                   /  ;  Instance ({} {})
+                   `-'   {}
+        "#, &os_release.pretty_name, &build_date, &opts.url
+    );
 
     run_action!(modify_image(&zroot, &product, &motd), &dataset);
     run_action!(install_guest_tools(&zroot), &dataset);
