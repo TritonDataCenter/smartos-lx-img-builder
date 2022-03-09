@@ -1,6 +1,16 @@
+/*
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
+
+/*
+ * Copyright 2022 Joyent, Inc.
+ */
+
 use crate::manifest::Manifest;
 use anyhow::{bail, Context, Result};
-use std::fs::OpenOptions;
+use std::fs::{self, OpenOptions};
 use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
@@ -122,7 +132,7 @@ pub fn install_tar<P: AsRef<Path>, T: AsRef<Path>>(zroot: P, file: T) -> Result<
     Ok(())
 }
 
-pub fn modify_image<P: AsRef<Path>>(zroot: P) -> Result<()> {
+pub fn modify_image<P: AsRef<Path>>(zroot: P, product: &str, motd: &str) -> Result<()> {
     let zroot = zroot.as_ref();
 
     // XXX these probably are not needed but historically they have been created
@@ -137,17 +147,38 @@ pub fn modify_image<P: AsRef<Path>>(zroot: P) -> Result<()> {
         "native/var",
     ];
 
+    /*
+     * If the tar was created from a docker image, this file might still be
+     * around.
+     */
+    let unwanted_files = [".dockerenv"];
+
     for p in &paths {
         let to_create = zroot.join(p);
         mkdirp(&to_create, 0, 0, 0o755)?;
     }
 
+    for p in &unwanted_files {
+        let file = zroot.join(p);
+        if file.exists() {
+            fs::remove_file(&file)
+                .with_context(|| format!("failed to unlink {}", &file.display()))?;
+            println!("unlinked {}", &file.display());
+        }
+    }
+
     let native_tmp = zroot.join("native/tmp");
     change_perms(&native_tmp, 0, 0, 0o1777)?;
 
-    let fstab = zroot.join("etc/fstab");
-    let contents = include_str!("../files/fstab");
-    create_file_contents(&fstab, contents)?;
+    let fstab_path = zroot.join("etc/fstab");
+    let fstab = include_str!("../files/fstab");
+    create_file_contents(&fstab_path, &fstab)?;
+
+    let product_path = zroot.join("etc/product");
+    create_file_contents(&product_path, &product)?;
+
+    let motd_path = zroot.join("etc/motd");
+    create_file_contents(&motd_path, &motd)?;
 
     Ok(())
 }
