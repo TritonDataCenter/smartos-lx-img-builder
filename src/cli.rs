@@ -6,6 +6,7 @@
 
 /*
  * Copyright 2022 Joyent, Inc.
+ * Copyright 2022 MNX Cloud, Inc.
  */
 
 use structopt::StructOpt;
@@ -49,7 +50,7 @@ pub struct Opts {
         long = "url",
         short = "u",
         help = "the url to information about the image as it would appear in the manifest",
-        default_value = "https://docs.joyent.com/public-cloud/instances/infrastructure/images"
+        default_value = "https://docs.tritondatacenter.com/public-cloud/instances/infrastructure/images"
     )]
     pub url: String,
     #[structopt(
