@@ -3,7 +3,7 @@ name = "smartos-lx-img-builder"
 version = "0.1.0"
 authors = [
    "Mike Zeller <mike@mikezeller.net>",
-   "Brian Bennett <brian.bennett@joyent.com>"
+   "Brian Bennett <brian.bennett@mnx.io>"
 ]
 edition = "2018"
 
