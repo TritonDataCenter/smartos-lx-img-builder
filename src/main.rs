@@ -6,6 +6,7 @@
 
 /*
  * Copyright 2022 Joyent, Inc.
+ * Copyright 2023 MNX Cloud, Inc.
  */
 
 extern crate os_release;
@@ -13,6 +14,7 @@ extern crate os_release;
 use anyhow::{Context, Result};
 use chrono::prelude::*;
 use os_release::OsRelease;
+use std::fs;
 use std::path::Path;
 use uuid::Uuid;
 
@@ -77,8 +79,8 @@ fn main() -> Result<()> {
     let name = format!("{}-{}", os_release.id, os_release.version_id)
         .trim_end_matches("-")
         .to_string();
-    let zfs_tar = format!("{}-{}.zfs.gz", &name, &build_date);
-    let image_manifest = &format!("{}-{}.json", &name, &build_date);
+    let zfs_tar = format!("output/{}-{}.zfs.gz", &name, &build_date);
+    let image_manifest = &format!("output/{}-{}.json", &name, &build_date);
 
     let desc = format!(
         "Container-native {} 64-bit image. {}",
@@ -96,7 +98,7 @@ fn main() -> Result<()> {
         tar_file: &zfs_tar,
     };
     let product = format!(
-        r#"Name: Joyent Instance
+        r#"Name: Triton Instance
 Image: {} {}
 Documentation: {}
 Description: {}
@@ -106,15 +108,22 @@ Description: {}
     );
 
     let motd = format!(
-        r#"   __        .                   .
- _|  |_      | .-. .  . .-. :--. |-
-|_    _|     ;|   ||  |(.-' |  | |
-  |__|   `--'  `-' `;-| `-' '  ' `-'
-                   /  ;  Instance ({} {})
-                   `-'   {}
-        "#, &os_release.pretty_name, &build_date, &opts.url
+        r#"         *--+--*--*
+         |\ |\ |\ |\
+         | \| \| \| \     #####  ####   #  #####  ###   #   # TM
+         +--*--+--*--*      #    #   #  #    #   #   #  ##  #
+         |\ |\ |\ |\ |      #    ####   #    #   #   #  # # #
+         | \| \| \| \|      #    #  #   #    #   #   #  #  ##
+         *--+--+--+--+      #    #   #  #    #    ###   #   #
+          \ |\ |\ |\ |
+           \| \| \| \|     LX Instance ({} {})
+            *--+--*--*     {}
+
+"#, &os_release.pretty_name, &build_date, &opts.url
     );
 
+    fs::create_dir_all("output")
+        .expect("Unable to create output directory");
     run_action!(modify_image(&zroot, &product, &motd), &dataset);
     run_action!(install_guest_tools(&zroot), &dataset);
     run_action!(create_dataset_gzip(&dataset, &zfs_tar), &dataset);

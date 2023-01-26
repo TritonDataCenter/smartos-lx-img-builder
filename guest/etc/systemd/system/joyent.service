@@ -1,5 +1,5 @@
 [Unit]
-Description=Joyent specific setup
+Description=Triton specific setup
 ConditionPathExists=/lib/smartdc/joyent_rc.local
 
 [Service]
