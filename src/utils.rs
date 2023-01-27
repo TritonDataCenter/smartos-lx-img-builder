@@ -6,9 +6,11 @@
 
 /*
  * Copyright 2022 Joyent, Inc.
+ * Copyright 2023 MNX Cloud, Inc.
  */
 
 use anyhow::{bail, Context, Result};
+use errno::errno;
 use std::ffi::CString;
 use std::fs;
 use std::os::unix::ffi::OsStrExt;
@@ -36,7 +38,7 @@ fn chown<P: AsRef<Path>>(path: P, owner: u32, group: u32) -> Result<()> {
 
     let (r, e) = unsafe {
         let r = libc::lchown(cstring.as_ptr(), owner, group);
-        let e = *libc::___errno();
+        let e = errno();
         (r, e)
     };
 
