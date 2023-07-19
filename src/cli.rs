@@ -6,7 +6,7 @@
 
 /*
  * Copyright 2022 Joyent, Inc.
- * Copyright 2022 MNX Cloud, Inc.
+ * Copyright 2023 MNX Cloud, Inc.
  */
 
 use structopt::StructOpt;
@@ -53,6 +53,14 @@ pub struct Opts {
         default_value = "https://docs.tritondatacenter.com/public-cloud/instances/infrastructure/images"
     )]
     pub url: String,
+    #[structopt(
+        name = "image_name",
+        long = "image_name",
+        short = "i",
+        help = "Image name. The default is detected from /etc/os-release.",
+        default_value = ""
+    )]
+    pub image_name: String,
     #[structopt(
         name = "zfs_parent",
         long = "zfs-parent",

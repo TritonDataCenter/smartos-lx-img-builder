@@ -76,9 +76,14 @@ fn main() -> Result<()> {
     run_action!(install_tar(&zroot, &opts.tar), &dataset);
 
     let os_release = read_os_release(&zroot).context("failed to read os-release")?;
-    let name = format!("{}-{}", os_release.id, os_release.version_id)
-        .trim_end_matches("-")
-        .to_string();
+    let name: String;
+    if opts.image_name.to_string().len() > 0 {
+        name = opts.image_name;
+    } else {
+        name = format!("{}-{}", os_release.id, os_release.version_id)
+            .trim_end_matches("-")
+            .to_string();
+    }
     let zfs_tar = format!("output/{}-{}.zfs.gz", &name, &build_date);
     let image_manifest = &format!("output/{}-{}.json", &name, &build_date);
 
