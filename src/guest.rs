@@ -6,6 +6,7 @@
 
 /*
  * Copyright 2022 Joyent, Inc.
+ * Copyright 2023 MNX Cloud, Inc.
  */
 
 use anyhow::{bail, Context, Result};
@@ -98,6 +99,27 @@ impl Distro {
                     0,
                     0o755,
                 )?;
+                let rm_files = [
+                    "root/anaconda-ks.cfg",
+                    "root/anaconda-post-nochroot.log",
+                    "root/anaconda-post.log",
+                    "root/original-ks.cfg",
+                ];
+                for f in rm_files {
+                    let fname = zroot.join(f);
+                    if fname.exists() {
+                        fs::remove_file(fname)?;
+                    }
+                }
+                let rm_dirs = [
+                    "root/buildinfo"
+                ];
+                for d in rm_dirs {
+                    let dname = zroot.join(d);
+                    if dname.exists() {
+                        fs::remove_dir_all(dname)?;
+                    }
+                }
             }
             Self::Void => {
                 let rclocal = zroot.join("etc/rc.local");
