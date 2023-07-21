@@ -46,7 +46,7 @@ if /native/usr/bin/zonename | grep -q $HOSTNAME; then
     mv "$tmp_hname" /etc/hostname
     hostname -F /etc/hostname
   else
-    rm "$tmp_hname)"
+    rm "$tmp_hname"
   fi
 fi
 

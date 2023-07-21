@@ -1,11 +1,17 @@
-#!/bin/sh
+#!/bin/bash
+
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+# Copyright 2017 Joyent, Inc.
+# Copyright 2023 MNX Cloud, Inc.
 
 usage() {
 cat <<EOF
 
-This is a wrapper script for the 'halt' and 'reboot' commands in Alpine Linux 
-(and BusyBox). It provides compatibility when run under SmartOS lx-brand when 
-issuing a 'vmadm stop' and 'vmadm reboot' command.
+This is a wrapper script to replace the 'halt' and 'reboot' commands in Alpine
+Linux (and BusyBox). It provides compatibility when run under SmartOS lx-brand.
 
 Usage:
   $0 -h
@@ -18,23 +24,31 @@ OPTIONS:
 EOF
 }
 
-while getopts "rh" OPTION
-do
-  case $OPTION in
-    h)
-      /sbin/halt
-      ;;
-    r)
-      /sbin/reboot
-      ;;
-    \?)
-      usage
-      exit
-      ;;
-  esac
-done
 
-if [ $# -eq 0 ]; then
-  usage
-  exit 1
-fi
+case $(basename $0) in
+  halt)
+    sig=USR1 ;;
+  reboot)
+    sig=TERM ;;
+  shutdown)
+    while getopts "rh" OPTION; do
+      case $OPTION in
+      h)
+        sig=USR1 ;;
+      r)
+        sig=TERM ;;
+      *)
+        usage
+        exit
+        ;;
+      esac
+    done
+    if [ $# -eq 0 ]; then
+      usage
+      exit 1
+    fi
+    ;;
+  *) exit 1 ;;
+esac
+
+/native/usr/bin/pkill -"${sig}" -f init

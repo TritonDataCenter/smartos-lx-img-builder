@@ -82,7 +82,7 @@ impl<'a> Manifest<'a> {
             "brand": "lx"
           },
           "uuid": self.uuid,
-          "public": false,
+          "public": true,
           "owner": "00000000-0000-0000-0000-000000000000",
           "tags": {
             "role": "os",

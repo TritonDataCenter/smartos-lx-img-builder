@@ -50,7 +50,7 @@ impl Distro {
 
         match self {
             Self::Alpine => {
-                let rclocal = zroot.join("etc/rc.local");
+                let rclocal = zroot.join("etc/local.d/joyent.start");
                 copy_file("guest/lib/smartdc/joyent_rc.local", &rclocal, 0, 0, 0o755)?;
                 let shutdown = zroot.join("sbin/shutdown");
                 copy_file("guest/sbin/shutdown", &shutdown, 0, 0, 0o755)?;
@@ -61,6 +61,42 @@ impl Distro {
                     0,
                     0o755,
                 )?;
+
+                let rm_files = [
+                    "etc/hostname",
+                    "etc/hosts",
+                    "etc/resolv.conf",
+                    "sbin/halt",
+                    "sbin/reboot",
+                ];
+                for f in rm_files {
+                    let fname = zroot.join(f);
+                    if fname.exists() || fname.is_symlink() {
+                        fs::remove_file(fname)?;
+                    }
+                }
+
+                /*
+                 * illumos has hard coded into it to replace several init
+                 * init scripts with /sbin/runscript as the interpreter. This
+                 * used to be included with openrc, but is not anymore.
+                 * Symlinking runscript to openrc-run seems to solve the issue
+                 * for us.
+                 */
+                let ln_paths = [
+                    // ["real file", "symlink"]
+                    ["sbin/openrc-run", "sbin/runscript"],
+                    ["sbin/shutdown", "sbin/halt"],
+                    ["sbin/shutdown", "sbin/reboot"],
+                ];
+
+                for p in &ln_paths {
+                    let src = Path::new("/").join(p[0]);
+                    let dst = zroot.join(p[1]);
+                    if !dst.exists() {
+                        create_symlink(&src, &dst, 0, 0)?;
+                    }
+                }
             }
             Self::Arch => {
                 let system = zroot.join("etc/systemd/system");

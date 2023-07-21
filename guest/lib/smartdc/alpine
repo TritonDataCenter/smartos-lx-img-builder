@@ -1,8 +1,26 @@
 #!/usr/bin/env bash
 #
 # Copyright (c) 2015, Joyent, Inc. All rights reserved.
+# Copyright 2023 MNX Cloud, Inc.
 #
 # Alpine specific setup
+
+#  Configure resolv.conf  if not set
+if [[ ! -e /etc/resolv.conf ]]; then
+  echo "# AUTOMATIC ZONE CONFIG" > /etc/resolv.conf
+  for i in $(mdata-get sdc:resolvers | tr '[]",' ' '); do
+    echo "nameserver $i" >> /etc/resolv.conf
+  done
+fi
+
+# Generate /etc/hosts
+if ! [ -e /etc/hosts ]; then
+cat << EOF > /etc/hosts
+127.0.1.1	$(hostname)
+127.0.0.1	localhost localhost.localdomain
+::1		localhost localhost.localdomain
+EOF
+fi
 
 # load common functions and vars
 . /lib/smartdc/common.lib
