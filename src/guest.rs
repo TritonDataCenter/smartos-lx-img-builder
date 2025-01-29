@@ -6,7 +6,7 @@
 
 /*
  * Copyright 2022 Joyent, Inc.
- * Copyright 2023 MNX Cloud, Inc.
+ * Copyright 2025 MNX Cloud, Inc.
  */
 
 use anyhow::{bail, Context, Result};
@@ -62,7 +62,7 @@ impl Distro {
                     0o755,
                 )?;
 
-                let rm_files = [
+                let rm_files: [&str; 5] = [
                     "etc/hostname",
                     "etc/hosts",
                     "etc/resolv.conf",
@@ -72,6 +72,7 @@ impl Distro {
                 for f in rm_files {
                     let fname = zroot.join(f);
                     if fname.exists() || fname.is_symlink() {
+                        println!("Removing shit file {} from guest ({})", f, fname.to_str().unwrap());
                         fs::remove_file(fname)?;
                     }
                 }
@@ -169,6 +170,17 @@ impl Distro {
                     0,
                     0o755,
                 )?;
+                let rm_files: [&str; 2] = [
+                    "etc/hosts",
+                    "etc/resolv.conf",
+                ];
+                for f in rm_files {
+                    let fname = zroot.join(f);
+                    if fname.exists() || fname.is_symlink() {
+                        fs::remove_file(fname)?;
+                    }
+                }
+
             }
             Self::Unknown => {
                 bail!("failed to detect supported Linux Distribution");

@@ -6,6 +6,7 @@
 
 /*
  * Copyright 2022 Joyent, Inc.
+ * Copyright 2025 MNX Cloud, Inc.
  */
 
 use crate::manifest::Manifest;
@@ -102,6 +103,7 @@ pub fn install_tar<P: AsRef<Path>, T: AsRef<Path>>(zroot: P, file: T) -> Result<
 
     let mut gtaropts = String::from("-");
     match file_ext.as_str() {
+        "gz" => gtaropts.push_str("xz"),
         "gzip" => gtaropts.push_str("xz"),
         "bzip2" => gtaropts.push_str("xj"),
         "compressed" => gtaropts.push_str("xz"),
